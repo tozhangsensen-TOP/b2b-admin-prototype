@@ -466,16 +466,17 @@ function createWarehouseLayoutScene(mount: HTMLDivElement) {
   });
 
   // 拣选区：一半是轻型货架，一半是品地堆位
+  // 轻型货架放在靠上位置（z值更小）
   ["P1", "P2"].forEach((id, index) => {
-    const rack = createRackRow(id, 6, 2, { light: true });
-    rack.position.set(27 + index * 3.2, 0, -6);
+    const rack = createRackRow(id, 6, 2, { light: true, labelSide: -1 });
+    rack.position.set(27 + index * 3.2, 0, -12);
     scene.add(rack);
   });
 
-  // 另一半是品地堆位（托盘直接放地上）
+  // 另一半是品地堆位（托盘直接放地上），放在货架靠下位置
   for (let i = 0; i < 6; i += 1) {
     const pallet = createPallet(`P-${String(i + 1).padStart(2, "0")}`);
-    pallet.position.set(33.4 + (i % 3) * 2.0, 0.08, -8 + Math.floor(i / 3) * 4.0);
+    pallet.position.set(27 + (i % 3) * 2.0, 0.08, -2 + Math.floor(i / 3) * 3.0);
     scene.add(pallet);
   }
 
