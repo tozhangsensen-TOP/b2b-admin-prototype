@@ -56,16 +56,11 @@ const flows: FlowDef[] = [
     color: "#f97316",
     points: [[5, -1], [12, 2], [18, 4], [21, -2]],
   },
-  // {
-  //   name: "退货流程",
-  //   color: "#7e57c2",
-  //   points: [[-16, -27], [-8, -23], [-2, -20], [10, -16]],
-  // },
-  // {
-  //   name: "盘点流程",
-  //   color: "#14b8a6",
-  //   points: [[-18, 8], [-8, 2], [6, -5], [20, -9], [31, -8]],
-  // },
+  {
+    name: "拣货流程",
+    color: "#8b5cf6",
+    points: [[23, -2], [26, -2], [29, -2], [32, -5], [35, -5], [38, -5], [35, -8], [32, -8], [29, -8], [26, -11], [23, -11], [26, -14], [29, -14], [32, -14], [35, -17], [38, -17]],
+  },
 ];
 
 function makeMaterial(color: string, options: THREE.MeshStandardMaterialParameters = {}) {
@@ -473,10 +468,10 @@ function createWarehouseLayoutScene(mount: HTMLDivElement) {
     scene.add(rack);
   });
 
-  // 另一半是品地堆位（托盘直接放地上），放在货架靠下位置
-  for (let i = 0; i < 6; i += 1) {
+  // 另一半是品地堆位（托盘直接放地上），放在货架靠下位置，都在拣选区内
+  for (let i = 0; i < 9; i += 1) {
     const pallet = createPallet(`P-${String(i + 1).padStart(2, "0")}`);
-    pallet.position.set(27 + (i % 3) * 2.0, 0.08, -2 + Math.floor(i / 3) * 3.0);
+    pallet.position.set(25 + (i % 3) * 2.5, 0.08, -8 + Math.floor(i / 3) * 3.5);
     scene.add(pallet);
   }
 
