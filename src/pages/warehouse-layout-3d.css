@@ -1,0 +1,85 @@
+.warehouse-layout-3d-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.warehouse-layout-3d-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d9e2ec;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.warehouse-layout-3d-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.warehouse-layout-3d-title strong {
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.warehouse-layout-3d-title span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.warehouse-layout-3d-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: #475569;
+  font-size: 12px;
+}
+
+.warehouse-layout-3d-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.warehouse-layout-3d-swatch {
+  width: 18px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.warehouse-layout-3d-stage {
+  position: relative;
+  width: 100%;
+  height: min(72vh, 760px);
+  min-height: 620px;
+  overflow: hidden;
+  border: 1px solid #d9e2ec;
+  border-radius: 6px;
+  background: #eef3f8;
+}
+
+.warehouse-layout-3d-stage canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.warehouse-layout-3d-hint {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 8px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #475569;
+  font-size: 12px;
+  pointer-events: none;
+}
