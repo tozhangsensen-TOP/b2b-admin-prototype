@@ -245,7 +245,9 @@ group.add(rackLabel);
           : `${rowId}-${String(bay + 1).padStart(2, "0")}-${level + 1}`;
         const loc = createLabelSprite(locationCode, { width: options.highBay ? 220 : 180, height: 66, bg: "rgba(15, 23, 42, 0.75)", fg: "#ffffff", font: options.highBay ? 24 : 22 });
         loc.scale.set(options.highBay ? 1.25 : options.light ? 0.72 : 0.9, options.highBay ? 0.42 : options.light ? 0.26 : 0.32, 1);
-        loc.position.set(x, y + (options.highBay ? 0.48 : 0.34), side * (depth / 2 + 0.12));
+        // 高位货架第一层的货位编码位置更低，接近地面
+        const locY = options.highBay && level === 0 ? 1.0 : y + (options.highBay ? 0.48 : 0.34);
+        loc.position.set(x, locY, side * (depth / 2 + 0.12));
         group.add(loc);
       });
 
@@ -555,11 +557,6 @@ function createWarehouseLayoutScene(mount: HTMLDivElement) {
     const elapsed = clock.getElapsedTime();
     controls.update();
     camera.lookAt(controls.target);
-    scene.traverse((obj) => {
-      if (obj instanceof THREE.Sprite && obj.position.y > 1) {
-        obj.position.y += Math.sin(elapsed * 1.1 + obj.id) * 0.0008;
-      }
-    });
     renderer.render(scene, camera);
   };
   animate();
