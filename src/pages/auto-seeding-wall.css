@@ -1,0 +1,287 @@
+.asw-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.asw-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid #d9e2ec;
+  border-radius: 6px;
+  padding: 10px 16px;
+}
+
+.asw-tb-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.asw-title-h {
+  font-weight: 700;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.asw-sub {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.asw-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.asw-li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.asw-sw {
+  width: 18px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.asw-stage {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.asw-3d-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.asw-3d {
+  position: relative;
+  width: 100%;
+  height: min(72vh, 720px);
+  min-height: 560px;
+  background: #eef3f8;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.asw-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.asw-hint {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #475569;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 12px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Right panel ─────────────────────────────────────────────────────────── */
+
+.asw-panel {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: min(72vh, 720px);
+  min-height: 560px;
+  overflow-y: auto;
+}
+
+.asw-card {
+  background: #fff;
+  border: 1px solid #d9e2ec;
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.asw-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.asw-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 12px;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.asw-row:last-of-type {
+  border-bottom: none;
+}
+
+.asw-lab {
+  color: #64748b;
+}
+
+.asw-val {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.asw-ok {
+  color: #22c55e;
+}
+
+.asw-act {
+  color: #f97316;
+}
+
+.asw-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 5px;
+  vertical-align: middle;
+  animation: asw-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes asw-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.asw-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.asw-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.asw-pct {
+  font-size: 12px;
+  color: #22c55e;
+  font-weight: 600;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* Scan list */
+.asw-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.asw-scan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  font-size: 11px;
+  gap: 8px;
+}
+
+.asw-done {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+}
+
+.asw-cur {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+}
+
+.asw-code {
+  font-family: monospace;
+  font-weight: 600;
+  color: #0f172a;
+  flex-shrink: 0;
+}
+
+.asw-dest {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.asw-sts {
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.asw-done.asw-sts {
+  color: #22c55e;
+}
+
+.asw-cur.asw-sts {
+  color: #f97316;
+}
+
+.asw-pending.asw-sts {
+  color: #94a3b8;
+}
+
+/* Bin status grid */
+.asw-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.asw-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+
+.asw-a {
+  background: #bbf7d0;
+  color: #166534;
+  border-color: #22c55e;
+}
+
+.asw-b {
+  background: #fed7aa;
+  color: #9a3412;
+  border-color: #f97316;
+  animation: asw-pulse 1s ease-in-out infinite;
+}

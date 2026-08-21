@@ -78,6 +78,10 @@ import { putawayTasks as initialPutawayTasks, type PutawayLineItem, type Putaway
 import { PickingTaskPage, type PickingScenario } from "./pages/picking-task";
 import { pickingTasks as initialPickingTasks, type PickingLineItem, type PickingTaskRow } from "./data/picking-task";
 import { PickingPdaH5Page } from "./pages/picking-pda-h5";
+import { TransferDispatchPage } from "./pages/transfer-dispatch";
+import { TransferPickingPage } from "./pages/transfer-picking";
+import { TransferPickingRulesPage } from "./pages/transfer-picking-rules";
+import { TransferPickingPdaPage } from "./pages/transfer-picking-pda";
 import { OutboundNotificationListPage, type OutboundListScenario } from "./pages/outbound-notification";
 import { outboundNotifications as initialOutboundNotifications, type OutboundNotificationRow } from "./data/outbound-notification";
 import { ShippingExecutionPage, type ShippingScenario } from "./pages/shipping-execution";
@@ -86,8 +90,8 @@ import { StocktakingTaskPage, type StocktakingScenario } from "./pages/stocktaki
 import { stocktakingTasks as initialStocktakingTasks, type StocktakingLineItem, type StocktakingTaskRow } from "./data/stocktaking-task";
 import { DriverCheckinPage, type DriverCheckinScenario } from "./pages/driver-checkin";
 import { type CheckinResultData } from "./data/driver-checkin";
-import { Warehouse3dPage } from "./pages/warehouse-3d";
 import { WarehouseLayout3dPage } from "./pages/warehouse-layout-3d";
+import { AutoSeedingWallPage } from "./pages/auto-seeding-wall";
 import { ExportTaskCenterPage } from "./pages/export-task-center";
 import { MessageCenterPage } from "./pages/message-center";
 import { ShellCapabilitiesPage } from "./pages/shell-capabilities-page";
@@ -151,6 +155,11 @@ import { SomDashboard } from "./pages/som/som-dashboard";
 import { TemplateManagement } from "./pages/som/template-management";
 import { AutoDispatchRules } from "./pages/som/auto-dispatch-rules";
 import { WtTaskCenter } from "./pages/wt/wt-task-center";
+import { OutsourcedTransferSuggestionsPage } from "./pages/outsourced-transfer-suggestions";
+import { OutsourcedTransferConfigPage } from "./pages/outsourced-transfer-config";
+import { OutsourcedTransferSuggestionDetailPage } from "./pages/outsourced-transfer-suggestion-detail";
+import { OutsourcedTransferDemo } from "./pages/outsourced-transfer-demo";
+import { transferSuggestionRecords } from "./data/outsourced-transfer-suggestions";
 
 type WorkspaceTabKey =
   | "home"
@@ -182,11 +191,15 @@ type WorkspaceTabKey =
   | "putaway"
   | "picking"
   | "picking-pda"
+  | "transfer-dispatch"
+  | "transfer-picking"
+  | "transfer-picking-rules"
+  | "transfer-picking-pda"
   | "shipping"
   | "stocktaking"
   | "driver-checkin"
-  | "warehouse-3d"
   | "warehouse-layout-3d"
+  | "auto-seeding-wall"
   | "warehouse-list"
   | "warehouse-create"
   | "warehouse-edit"
@@ -194,7 +207,10 @@ type WorkspaceTabKey =
   | "som-dashboard"
   | "som-templates"
   | "som-auto-rules"
-  | "wt-task-center";
+  | "wt-task-center"
+  | "outsourced-transfer"
+  | "outsourced-transfer-config"
+  | "outsourced-transfer-detail";
 type EditorMode = "create" | "edit";
 type ListScenario = "normal" | "loading" | "empty" | "no-result" | "no-auth" | "partial-success";
 type EditScenario = "normal" | "save-failed" | "submit-failed" | "conflict" | "read-only";
@@ -544,8 +560,8 @@ function FieldBlock({ field, readOnly = false }: { field: RichField; readOnly?: 
 }
 
 const hashWorkspaceTabs = new Set<WorkspaceTabKey>([
-  "warehouse-3d",
   "warehouse-layout-3d",
+  "auto-seeding-wall",
 ]);
 
 function resolveInitialWorkspaceTab(): WorkspaceTabKey {
@@ -650,6 +666,8 @@ export default function App() {
   const [messageCenterSelectedIds, setMessageCenterSelectedIds] = useState<string[]>([]);
   const [messageCenterActiveMessageId, setMessageCenterActiveMessageId] = useState<string | null>(null);
   const [floatingAlert, setFloatingAlert] = useState<FloatingAlertNotice | null>(null);
+  const [outsourcedTransferSuggestions, setOutsourcedTransferSuggestions] = useState(transferSuggestionRecords);
+  const [selectedTransferSuggestion, setSelectedTransferSuggestion] = useState(transferSuggestionRecords[0]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = activeTheme;
@@ -913,6 +931,7 @@ export default function App() {
     return taskId;
   }
 
+  
   function downloadExportTask(task: ExportTaskRecord) {
     setExportTasks((current) =>
       current.map((item) =>
@@ -1188,11 +1207,15 @@ export default function App() {
       putaway: { key: "putaway", label: "上架任务", closable: true, icon: ArrowUpFromLine },
       picking: { key: "picking", label: "拣货执行", closable: true, icon: PackageCheck },
       "picking-pda": { key: "picking-pda", label: "PDA H5拣货", closable: true, icon: PackageCheck },
+      "transfer-dispatch": { key: "transfer-dispatch", label: "调拨作业", closable: true, icon: ClipboardList },
+      "transfer-picking": { key: "transfer-picking", label: "调拨拣货", closable: true, icon: ClipboardList },
+      "transfer-picking-rules": { key: "transfer-picking-rules", label: "调拨拣货规则", closable: true, icon: ClipboardList },
+      "transfer-picking-pda": { key: "transfer-picking-pda", label: "调拨拣货PDA", closable: true, icon: ClipboardList },
       shipping: { key: "shipping", label: "复核发运", closable: true, icon: PackageCheck },
       stocktaking: { key: "stocktaking", label: "库存盘点", closable: true, icon: ClipboardList },
       "driver-checkin": { key: "driver-checkin", label: "司机签到", closable: true, icon: ArrowDownToLine },
-      "warehouse-3d": { key: "warehouse-3d", label: "库房3D页面", closable: true, icon: Warehouse },
       "warehouse-layout-3d": { key: "warehouse-layout-3d", label: "仓库布局3D", closable: true, icon: Warehouse },
+      "auto-seeding-wall": { key: "auto-seeding-wall", label: "自动播种墙", closable: true, icon: LayoutGrid },
       "warehouse-list": { key: "warehouse-list", label: "仓库主数据", closable: true },
       "warehouse-create": { key: "warehouse-create", label: "新建仓库", closable: true },
       "warehouse-edit": { key: "warehouse-edit", label: "编辑仓库", closable: true },
@@ -1201,6 +1224,9 @@ export default function App() {
       "som-templates": { key: "som-templates", label: "任务主题管理", closable: true, icon: FileText },
       "som-auto-rules": { key: "som-auto-rules", label: "自动派发规则", closable: true, icon: Settings2 },
       "wt-task-center": { key: "wt-task-center", label: "WT 任务中心", closable: true, icon: ClipboardList },
+      "outsourced-transfer": { key: "outsourced-transfer", label: "外租库转拨建议", closable: true, icon: Warehouse },
+      "outsourced-transfer-config": { key: "outsourced-transfer-config", label: "外租库转拨配置", closable: true, icon: Settings2 },
+      "outsourced-transfer-detail": { key: "outsourced-transfer-detail", label: "转拨建议详情", closable: true, icon: ClipboardList },
     } as const;
 
     return openTabs.map((key) => definitions[key]);
@@ -1386,6 +1412,19 @@ export default function App() {
 
   function openInventoryMove() {
     openWorkspaceTab("inventory-move");
+  }
+
+  function openOutsourcedTransfer() {
+    openWorkspaceTab("outsourced-transfer");
+  }
+
+  function openOutsourcedTransferConfig() {
+    openWorkspaceTab("outsourced-transfer-config");
+  }
+
+  function openOutsourcedTransferDetail(suggestion: any) {
+    setSelectedTransferSuggestion(suggestion);
+    openWorkspaceTab("outsourced-transfer-detail");
   }
 
   function openInboundList() {
@@ -2047,12 +2086,22 @@ export default function App() {
             ? "picking"
           : activeTab === "picking-pda"
             ? "picking"
+          : activeTab === "transfer-dispatch"
+            ? "transfer-dispatch"
+          : activeTab === "transfer-picking"
+            ? "transfer-picking"
+          : activeTab === "transfer-picking-rules"
+            ? "transfer-picking-rules"
+          : activeTab === "transfer-picking-pda"
+            ? "transfer-picking-pda"
           : activeTab === "shipping"
             ? "shipping"
           : activeTab === "driver-checkin"
             ? "driver-checkin"
-          : activeTab === "warehouse-3d" || activeTab === "warehouse-layout-3d"
+          : activeTab === "warehouse-layout-3d"
             ? "warehouse-ops"
+          : activeTab === "auto-seeding-wall"
+            ? "auto-seeding-wall"
           : activeTab.startsWith("warehouse-")
             ? "warehouse"
           : activeTab === "inventory-query"
@@ -2063,6 +2112,12 @@ export default function App() {
             ? "inventory-move"
           : activeTab === "stocktaking"
             ? "stocktaking"
+          : activeTab === "outsourced-transfer"
+            ? "outsourced-transfer"
+          : activeTab === "outsourced-transfer-config"
+            ? "outsourced-transfer-config"
+          : activeTab === "outsourced-transfer-detail"
+            ? "outsourced-transfer"
           : "purchase-order";
 
   const currentTenant = tenantOptions.find((item) => item.id === currentTenantId) ?? tenantOptions[0];
@@ -2101,6 +2156,12 @@ export default function App() {
         if (key === "stocktaking") {
           openStocktaking();
         }
+        if (key === "outsourced-transfer") {
+          openOutsourcedTransfer();
+        }
+        if (key === "outsourced-transfer-config") {
+          openOutsourcedTransferConfig();
+        }
         if (key === "supplier") {
           openSupplierList();
         }
@@ -2122,6 +2183,18 @@ export default function App() {
         if (key === "picking") {
           openPicking();
         }
+        if (key === "transfer-dispatch") {
+          openWorkspaceTab("transfer-dispatch");
+        }
+        if (key === "transfer-picking") {
+          openWorkspaceTab("transfer-picking");
+        }
+        if (key === "transfer-picking-rules") {
+          openWorkspaceTab("transfer-picking-rules");
+        }
+        if (key === "transfer-picking-pda") {
+          openWorkspaceTab("transfer-picking-pda");
+        }
         if (key === "shipping") {
           openShipping();
         }
@@ -2131,11 +2204,11 @@ export default function App() {
         if (key === "warehouse") {
           openWarehouseList();
         }
-        if (key === "warehouse-3d") {
-          openWorkspaceTab("warehouse-3d");
-        }
         if (key === "warehouse-layout-3d") {
           openWorkspaceTab("warehouse-layout-3d");
+        }
+        if (key === "auto-seeding-wall") {
+          openWorkspaceTab("auto-seeding-wall");
         }
         if (key === "som-dashboard") {
           openWorkspaceTab("som-dashboard");
@@ -2203,6 +2276,7 @@ export default function App() {
             setImportStage("select");
             setImportOpen(true);
           }}
+          onOpenOutsourcedTransfer={openOutsourcedTransfer}
         />
       )}
       {activeTab === "design-system" && <DesignSystemPage />}
@@ -2567,6 +2641,10 @@ export default function App() {
           onConfirmPicking={confirmPickingTask}
         />
       )}
+      {activeTab === "transfer-dispatch" && <TransferDispatchPage />}
+      {activeTab === "transfer-picking" && <TransferPickingPage onOpenRules={() => openWorkspaceTab("transfer-picking-rules")} onOpenPda={() => openWorkspaceTab("transfer-picking-pda")} />}
+      {activeTab === "transfer-picking-rules" && <TransferPickingRulesPage />}
+      {activeTab === "transfer-picking-pda" && <TransferPickingPdaPage onBack={() => openWorkspaceTab("transfer-picking")} />}
       {activeTab === "shipping" && (
         <ShippingExecutionPage
           tasks={shippingTasks}
@@ -2583,18 +2661,34 @@ export default function App() {
           onCheckinComplete={handleDriverCheckin}
         />
       )}
-      {activeTab === "warehouse-3d" && (
-        <Warehouse3dPage />
-      )}
       {activeTab === "warehouse-layout-3d" && (
         <WarehouseLayout3dPage />
       )}
+      {activeTab === "auto-seeding-wall" && <AutoSeedingWallPage />}
       {activeTab === "som-dashboard" && (
         <SomDashboard onCreateTask={() => openWorkspaceTab("som-dashboard")} />
       )}
       {activeTab === "som-templates" && <TemplateManagement />}
       {activeTab === "som-auto-rules" && <AutoDispatchRules />}
       {activeTab === "wt-task-center" && <WtTaskCenter />}
+      {activeTab === "outsourced-transfer" && (
+        <OutsourcedTransferSuggestionsPage
+          onViewDetail={openOutsourcedTransferDetail}
+          onShowAlert={showFloatingAlert}
+          onOpenConfig={openOutsourcedTransferConfig}
+        />
+      )}
+      {activeTab === "outsourced-transfer-config" && (
+        <OutsourcedTransferConfigPage onShowAlert={showFloatingAlert} />
+      )}
+      {activeTab === "outsourced-transfer-detail" && selectedTransferSuggestion && (
+        <OutsourcedTransferSuggestionDetailPage
+          suggestion={selectedTransferSuggestion}
+          onBack={openOutsourcedTransfer}
+          onShowAlert={showFloatingAlert}
+          onOpenConfig={openOutsourcedTransferConfig}
+        />
+      )}
 
       <ImportModal
         open={importOpen}
@@ -2961,6 +3055,7 @@ function HomePage({
   onOpenShellCapabilities,
   onOpenSystemStatus,
   onOpenImport,
+  onOpenOutsourcedTransfer,
 }: {
   onOpenList: () => void;
   onOpenCreate: () => void;
@@ -2972,6 +3067,7 @@ function HomePage({
   onOpenShellCapabilities: () => void;
   onOpenSystemStatus: () => void;
   onOpenImport: () => void;
+  onOpenOutsourcedTransfer: () => void;
 }) {
   const shortcuts = [
     {
@@ -3015,6 +3111,13 @@ function HomePage({
       action: "打开查询",
       icon: ScrollText,
       onClick: onOpenInventoryFlowQuery,
+    },
+    {
+      title: "外租库转拨建议",
+      description: "查看系统定时生成的外租库到本库的转拨建议，支持人工调整后提交。",
+      action: "打开建议页",
+      icon: Warehouse,
+      onClick: onOpenOutsourcedTransfer,
     },
     {
       title: "供应商主数据",

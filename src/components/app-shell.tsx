@@ -5,6 +5,7 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   LayoutDashboard,
+  LayoutGrid,
   FileText,
   Settings2,
   ClipboardList,
@@ -43,6 +44,7 @@ type NavIconName =
   | "putaway"
   | "picking"
   | "shipping"
+  | "transfer"
   | "stocktaking"
   | "checkin"
   | "supplier"
@@ -51,7 +53,8 @@ type NavIconName =
   | "som"
   | "templates"
   | "rules"
-  | "wt-tasks";
+  | "wt-tasks"
+  | "auto-seeding-wall";
 
 type NavItem = {
   id: string;
@@ -119,10 +122,14 @@ const navigationTree: NavSection[] = [
           { id: "receiving", label: "收货执行", icon: "receive" },
           { id: "putaway", label: "上架任务", icon: "putaway" },
           { id: "picking", label: "拣货执行", icon: "picking" },
+          { id: "transfer-picking", label: "调拨拣货", icon: "transfer" },
+          { id: "transfer-picking-rules", label: "调拨拣货规则", icon: "transfer" },
+          { id: "transfer-picking-pda", label: "调拨拣货PDA", icon: "transfer" },
+          { id: "transfer-dispatch", label: "调拨作业", icon: "transfer" },
           { id: "shipping", label: "复核发运", icon: "shipping" },
           { id: "driver-checkin", label: "签到投单", icon: "checkin" },
-          { id: "warehouse-3d", label: "库房3D页面", icon: "warehouse" },
           { id: "warehouse-layout-3d", label: "仓库布局3D", icon: "warehouse" },
+          { id: "auto-seeding-wall", label: "自动播种墙", icon: "auto-seeding-wall" },
           { id: "wt-task-center", label: "WT 任务中心", icon: "wt-tasks" },
         ],
       },
@@ -141,6 +148,14 @@ const navigationTree: NavSection[] = [
           { id: "inventory-flow-query", label: "库存流水查询", icon: "notice" },
           { id: "inventory-move", label: "库存移动", icon: "warehouse" },
           { id: "stocktaking", label: "库存盘点", icon: "stocktaking" },
+        ],
+      },
+      {
+        id: "outsourced-transfer-group",
+        label: "外租库转拨",
+        items: [
+          { id: "outsourced-transfer", label: "外租库转拨建议", icon: "transfer" },
+          { id: "outsourced-transfer-config", label: "外租库转拨配置", icon: "transfer" },
         ],
       },
     ],
@@ -172,6 +187,7 @@ const iconMap: Record<NavIconName, LucideIcon> = {
   receive: ArrowDownToLine,
   putaway: ArrowUpFromLine,
   picking: PackageCheck,
+  transfer: Workflow,
   shipping: PackageCheck,
   stocktaking: ClipboardList,
   checkin: MapPin,
@@ -182,6 +198,7 @@ const iconMap: Record<NavIconName, LucideIcon> = {
   templates: FileText,
   rules: Settings2,
   "wt-tasks": ClipboardList,
+  "auto-seeding-wall": LayoutGrid,
 };
 
 const defaultSectionExpanded = Object.fromEntries(navigationTree.map((section) => [section.id, true]));

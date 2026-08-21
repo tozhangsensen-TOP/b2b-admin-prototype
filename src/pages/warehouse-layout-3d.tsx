@@ -618,8 +618,7 @@ export function WarehouseLayout3dPage() {
     <div className="warehouse-layout-3d-page">
       <div className="warehouse-layout-3d-toolbar">
         <div className="warehouse-layout-3d-title">
-          <strong>仓库布局 Three.js</strong>
-          <span>参考仓库整体布局与业务流转图生成，所有高位货架和拣选货位均带货位标签。</span>
+          <span>本图为仓库三维布局仿真示意图，用于展示高位货架区、拣选作业区、收发货月台等核心功能区域的立体布局关系，货位编码按标准WMS规则预生成。</span>
         </div>
         <div className="warehouse-layout-3d-legend">
           {legend.map((item) => (
