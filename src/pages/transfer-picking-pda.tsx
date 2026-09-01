@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import {
-  ArrowLeft,
   BatteryCharging,
   Check,
   Forklift,
@@ -81,7 +80,7 @@ function applySorterSeed(t: TransferPickingTask, line: SorterLine, qty: number):
    页面
    ════════════════════════════════════════════════════════ */
 
-export function TransferPickingPdaPage({ onBack }: { onBack?: () => void }) {
+export function TransferPickingPdaPage() {
   const [tasks, setTasks] = useState<TransferPickingTask[]>(() => transferPickingTasks.map((t) => ({ ...t })));
   const [end, setEnd] = useState<End>("forklift");
   const [taskId, setTaskId] = useState(transferPickingTasks[0].id);
@@ -97,7 +96,6 @@ export function TransferPickingPdaPage({ onBack }: { onBack?: () => void }) {
     <PdaFrame
       title={end === "forklift" ? "叉车端 · 下架" : "分拣端 · 播种"}
       badge={task?.vehicleNo ?? ""}
-      onBack={onBack}
       topExtra={
         <SegmentedControl
           items={[
@@ -445,9 +443,6 @@ function PdaFrame({
             </span>
           </div>
           <div className="flex items-center justify-between border-b border-border bg-white px-3 py-3">
-            <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-sm hover:bg-bg-hover" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            </button>
             <div className="text-body font-medium text-text-primary">{title}</div>
             <Badge tone="pending">{badge}</Badge>
           </div>
