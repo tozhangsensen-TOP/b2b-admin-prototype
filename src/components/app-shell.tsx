@@ -123,7 +123,6 @@ const navigationTree: NavSection[] = [
           { id: "putaway", label: "上架任务", icon: "putaway" },
           { id: "picking", label: "拣货执行", icon: "picking" },
           { id: "transfer-picking", label: "调拨拣货", icon: "transfer" },
-          { id: "transfer-picking-rules", label: "调拨拣货规则", icon: "transfer" },
           { id: "transfer-picking-pda", label: "调拨拣货PDA", icon: "transfer" },
           { id: "transfer-dispatch", label: "调拨作业", icon: "transfer" },
           { id: "shipping", label: "复核发运", icon: "shipping" },

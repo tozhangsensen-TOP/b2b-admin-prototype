@@ -4,7 +4,6 @@ import {
   ClipboardList,
   Forklift,
   PackageCheck,
-  Settings2,
   Smartphone,
   Truck,
   Users,
@@ -195,10 +194,6 @@ export function TransferPickingPage({ onOpenRules, onOpenPda }: { onOpenRules?: 
         description="合单 / 合车 / 波次配置下，叉车司机下架 与 分拣员播种 两端并行协同，打破单人串行瓶颈。"
         actions={
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={onOpenRules}>
-              <Settings2 className="h-4 w-4" aria-hidden="true" />
-              规则配置
-            </Button>
             <Button variant="primary" onClick={onOpenPda}>
               <Smartphone className="h-4 w-4" aria-hidden="true" />
               双端 PDA

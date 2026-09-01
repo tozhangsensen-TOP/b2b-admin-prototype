@@ -80,7 +80,6 @@ import { pickingTasks as initialPickingTasks, type PickingLineItem, type Picking
 import { PickingPdaH5Page } from "./pages/picking-pda-h5";
 import { TransferDispatchPage } from "./pages/transfer-dispatch";
 import { TransferPickingPage } from "./pages/transfer-picking";
-import { TransferPickingRulesPage } from "./pages/transfer-picking-rules";
 import { TransferPickingPdaPage } from "./pages/transfer-picking-pda";
 import { OutboundNotificationListPage, type OutboundListScenario } from "./pages/outbound-notification";
 import { outboundNotifications as initialOutboundNotifications, type OutboundNotificationRow } from "./data/outbound-notification";
@@ -193,7 +192,6 @@ type WorkspaceTabKey =
   | "picking-pda"
   | "transfer-dispatch"
   | "transfer-picking"
-  | "transfer-picking-rules"
   | "transfer-picking-pda"
   | "shipping"
   | "stocktaking"
@@ -1209,7 +1207,6 @@ export default function App() {
       "picking-pda": { key: "picking-pda", label: "PDA H5拣货", closable: true, icon: PackageCheck },
       "transfer-dispatch": { key: "transfer-dispatch", label: "调拨作业", closable: true, icon: ClipboardList },
       "transfer-picking": { key: "transfer-picking", label: "调拨拣货", closable: true, icon: ClipboardList },
-      "transfer-picking-rules": { key: "transfer-picking-rules", label: "调拨拣货规则", closable: true, icon: ClipboardList },
       "transfer-picking-pda": { key: "transfer-picking-pda", label: "调拨拣货PDA", closable: true, icon: ClipboardList },
       shipping: { key: "shipping", label: "复核发运", closable: true, icon: PackageCheck },
       stocktaking: { key: "stocktaking", label: "库存盘点", closable: true, icon: ClipboardList },
@@ -2090,8 +2087,6 @@ export default function App() {
             ? "transfer-dispatch"
           : activeTab === "transfer-picking"
             ? "transfer-picking"
-          : activeTab === "transfer-picking-rules"
-            ? "transfer-picking-rules"
           : activeTab === "transfer-picking-pda"
             ? "transfer-picking-pda"
           : activeTab === "shipping"
@@ -2188,9 +2183,6 @@ export default function App() {
         }
         if (key === "transfer-picking") {
           openWorkspaceTab("transfer-picking");
-        }
-        if (key === "transfer-picking-rules") {
-          openWorkspaceTab("transfer-picking-rules");
         }
         if (key === "transfer-picking-pda") {
           openWorkspaceTab("transfer-picking-pda");
@@ -2642,8 +2634,7 @@ export default function App() {
         />
       )}
       {activeTab === "transfer-dispatch" && <TransferDispatchPage />}
-      {activeTab === "transfer-picking" && <TransferPickingPage onOpenRules={() => openWorkspaceTab("transfer-picking-rules")} onOpenPda={() => openWorkspaceTab("transfer-picking-pda")} />}
-      {activeTab === "transfer-picking-rules" && <TransferPickingRulesPage />}
+      {activeTab === "transfer-picking" && <TransferPickingPage onOpenPda={() => openWorkspaceTab("transfer-picking-pda")} />}
       {activeTab === "transfer-picking-pda" && <TransferPickingPdaPage onBack={() => openWorkspaceTab("transfer-picking")} />}
       {activeTab === "shipping" && (
         <ShippingExecutionPage
