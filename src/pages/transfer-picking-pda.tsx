@@ -16,8 +16,8 @@ import { SegmentedControl } from "../components/ui/segmented-control";
 import { Select } from "../components/ui/select";
 import {
   forkliftProgress,
+  getTransferPickingTasks,
   sorterProgress,
-  transferPickingTasks,
   type ForkliftLine,
   type SorterLine,
   type TransferPickingTask,
@@ -81,9 +81,9 @@ function applySorterSeed(t: TransferPickingTask, line: SorterLine, qty: number):
    ════════════════════════════════════════════════════════ */
 
 export function TransferPickingPdaPage() {
-  const [tasks, setTasks] = useState<TransferPickingTask[]>(() => transferPickingTasks.map((t) => ({ ...t })));
+  const [tasks, setTasks] = useState<TransferPickingTask[]>(() => getTransferPickingTasks().map((t) => ({ ...t })));
   const [end, setEnd] = useState<End>("forklift");
-  const [taskId, setTaskId] = useState(transferPickingTasks[0].id);
+  const [taskId, setTaskId] = useState(getTransferPickingTasks()[0].id);
 
   const task = tasks.find((t) => t.id === taskId) ?? tasks[0];
   const taskOptions = tasks.map((t) => ({ label: `${t.taskNo} · ${t.vehicleNo}`, value: t.id }));

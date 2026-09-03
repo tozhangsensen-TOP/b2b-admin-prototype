@@ -4,6 +4,8 @@ export type PickingTaskRow = {
   id: string;
   waveNo: string;
   outboundOrderId: string;
+  noticeId?: string; // 来源出库通知单（按温层拆分时与 outboundOrderId 不同）
+  temperatureZone?: "冷藏" | "冷冻" | "常温";
   warehouse: string;
   zone: string;
   route: string;
@@ -53,6 +55,8 @@ export const pickingTasks: PickingTaskRow[] = [
     id: "PK20260326002",
     waveNo: "WV20260326002",
     outboundOrderId: "SO20260325019",
+    noticeId: "SO20260325019",
+    temperatureZone: "常温",
     warehouse: "北京中转仓",
     zone: "常温区B",
     route: "B03-B06",
@@ -87,6 +91,8 @@ export const pickingTasks: PickingTaskRow[] = [
     id: "PK20260326004",
     waveNo: "WV20260326004",
     outboundOrderId: "SO20260325021",
+    noticeId: "SO20260325021",
+    temperatureZone: "常温",
     warehouse: "武汉常温仓",
     zone: "常温区D",
     route: "D01-D02",
@@ -160,3 +166,8 @@ export const pickingLineItemsMap: Record<string, PickingLineItem[]> = {
     { sku: "SKU-70002", barcode: "6907000200075", name: "标签纸", spec: "100×80mm", unit: "卷", batchNo: "B20260311", sourceLocation: "设备A-01-02", orderQty: 40, pickedQty: 0, currentPickQty: 0 },
   ],
 };
+
+/* 动态写入拣货明细（原型用：按温层拆分下发生成的新任务） */
+export function appendPickingLines(entries: Record<string, PickingLineItem[]>) {
+  Object.assign(pickingLineItemsMap, entries);
+}

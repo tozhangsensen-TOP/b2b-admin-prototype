@@ -260,6 +260,15 @@ export const transferPickingTasks: TransferPickingTask[] = [
 
 /* ────────── 派生统计 ────────── */
 
+/* 模块级任务store（原型用）：出库通知单「合并统单拣货」后统单任务下发至此，与调拨拣货PDA共享 */
+const transferPickingTaskStore: TransferPickingTask[] = [...transferPickingTasks];
+export function getTransferPickingTasks(): TransferPickingTask[] {
+  return transferPickingTaskStore;
+}
+export function addTransferPickingTask(task: TransferPickingTask) {
+  transferPickingTaskStore.unshift(task);
+}
+
 export function forkliftProgress(t: TransferPickingTask): number {
   const p = t.forkliftLines.reduce((s, l) => s + l.picked, 0);
   const pl = t.forkliftLines.reduce((s, l) => s + l.planned, 0);

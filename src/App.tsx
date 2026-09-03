@@ -76,11 +76,22 @@ import { receivingTasks as initialReceivingTasks, type ReceivingLineItem, type R
 import { PutawayTaskPage, type PutawayScenario } from "./pages/putaway-task";
 import { putawayTasks as initialPutawayTasks, type PutawayLineItem, type PutawayTaskRow } from "./data/putaway-task";
 import { PickingTaskPage, type PickingScenario } from "./pages/picking-task";
-import { pickingTasks as initialPickingTasks, type PickingLineItem, type PickingTaskRow } from "./data/picking-task";
+import { appendPickingLines, pickingTasks as initialPickingTasks, type PickingLineItem, type PickingTaskRow } from "./data/picking-task";
 import { PickingPdaH5Page } from "./pages/picking-pda-h5";
 import { TransferPickingPdaPage } from "./pages/transfer-picking-pda";
+import { addTransferPickingTask, getTransferPickingTasks, type TransferPickingTask } from "./data/transfer-picking";
 import { OutboundNotificationListPage, type OutboundListScenario } from "./pages/outbound-notification";
-import { outboundNotifications as initialOutboundNotifications, type OutboundNotificationRow } from "./data/outbound-notification";
+import {
+  groupByTemperatureZone,
+  outboundLineItemsMap,
+  outboundNotifications as initialOutboundNotifications,
+  temperatureZoneCode,
+  temperatureZoneLocationPrefix,
+  type OutboundNotificationRow,
+  type OutboundOrderSplitState,
+  type OutboundSplitOrder,
+  type TemperatureZone,
+} from "./data/outbound-notification";
 import { ShippingExecutionPage, type ShippingScenario } from "./pages/shipping-execution";
 import { shippingTasks as initialShippingTasks, type ShippingExecutionRow, type ShippingLineItem } from "./data/shipping-execution";
 import { StocktakingTaskPage, type StocktakingScenario } from "./pages/stocktaking-task";
@@ -638,6 +649,7 @@ export default function App() {
   const [inboundNotice, setInboundNotice] = useState<InboundNotice>(null);
   const [outboundNotifications, setOutboundNotifications] = useState<OutboundNotificationRow[]>(initialOutboundNotifications);
   const [outboundListScenario, setOutboundListScenario] = useState<OutboundListScenario>("normal");
+  const [outboundSplitOrders, setOutboundSplitOrders] = useState<Record<string, OutboundOrderSplitState>>({});
   const [receivingTasks, setReceivingTasks] = useState<ReceivingTaskRow[]>(initialReceivingTasks);
   const [receivingScenario, setReceivingScenario] = useState<ReceivingScenario>("normal");
   const [putawayTasks, setPutawayTasks] = useState<PutawayTaskRow[]>(initialPutawayTasks);
@@ -1442,6 +1454,58 @@ export default function App() {
     const outbound = outboundNotifications.find((item) => item.id === outboundOrderId);
     if (!outbound) return;
 
+    /* 按商品温层拆分出库订单，每个温层生成一张出库订单+拣货任务 */
+    const lines = outboundLineItemsMap[outboundOrderId] ?? [];
+    const zoneGroups = groupByTemperatureZone(lines);
+    const baseSeq = Math.max(0, ...pickingTasks.map((item) => Number(item.id.slice(-3))));
+    const newTasks: PickingTaskRow[] = [];
+    const newLines: Record<string, PickingLineItem[]> = {};
+    const splitOrders: OutboundSplitOrder[] = [];
+
+    zoneGroups.forEach((group, index) => {
+      const seq = baseSeq + 1 + index;
+      const taskId = `PK20260326${String(seq).padStart(3, "0")}`;
+      const orderId = `${outboundOrderId}-${temperatureZoneCode[group.zone]}`;
+      splitOrders.push({ orderId, zone: group.zone });
+      newTasks.push({
+        id: taskId,
+        waveNo: `WV20260326${String(seq).padStart(3, "0")}`,
+        outboundOrderId: orderId,
+        noticeId: outboundOrderId,
+        temperatureZone: group.zone,
+        warehouse: outbound.warehouse,
+        zone: `${group.zone}区A`,
+        route: `${group.zone}温层拣选路径`,
+        status: "待拣货",
+        totalQty: group.lines.reduce((sum, line) => sum + line.orderQty, 0),
+        pickedQty: 0,
+        createdAt: `${outbound.shipDate} 11:30:00`,
+        dueAt: `${outbound.shipDate} 14:00:00`,
+        picker: "待分配",
+        priority: outbound.priority,
+        carrier: outbound.carrier,
+        note: `按${group.zone}温层拆分的出库订单`,
+      });
+      newLines[taskId] = group.lines.map((line, lineIndex) => ({
+        sku: line.sku,
+        barcode: `69${line.sku.replace(/\D/g, "").padStart(10, "0")}`,
+        name: line.name,
+        spec: line.spec,
+        unit: line.unit,
+        batchNo: "B20260326",
+        sourceLocation: `${group.zone}A-01-0${lineIndex + 1}`,
+        orderQty: line.orderQty,
+        pickedQty: 0,
+        currentPickQty: 0,
+      }));
+    });
+
+    appendPickingLines(newLines);
+    setPickingTasks((current) => [
+      ...current.filter((item) => (item.noticeId ?? item.outboundOrderId) !== outboundOrderId),
+      ...newTasks,
+    ]);
+    setOutboundSplitOrders((current) => ({ ...current, [outboundOrderId]: { orders: splitOrders, merged: false } }));
     setOutboundNotifications((current) =>
       current.map((item) =>
         item.id === outboundOrderId
@@ -1454,12 +1518,107 @@ export default function App() {
       ),
     );
 
+    setActivePdaPickingTaskId(newTasks[0]?.id);
+    showFloatingAlert({
+      tone: "success",
+      title: "已按温层拆分出库订单",
+      description: `出库通知单${outboundOrderId}按温层拆分为${splitOrders.length}张出库订单（${splitOrders.map((o) => o.zone).join("/")}），并生成对应拣货任务。`,
+    });
+    openPicking(outboundOrderId);
+  }
+
+  function mergeUnifiedPicking(outboundOrderIds: string[]) {
+    /* 仅允许：调拨类型 + 未合并（待下发可直接合并，无需先下发） */
+    const eligible = outboundOrderIds.filter((id) => {
+      const row = outboundNotifications.find((item) => item.id === id);
+      const split = outboundSplitOrders[id];
+      return row?.orderType === "调拨出库"
+        && (row.status === "待下发" || row.status === "已下发" || row.status === "部分出库")
+        && !split?.merged;
+    });
+    if (eligible.length === 0) return;
+
+    const eligibleSet = new Set(eligible);
+    const customerById = new Map(outboundNotifications.map((item) => [item.id, item.customer]));
+    const lineSources = eligible.flatMap((id) => (outboundLineItemsMap[id] ?? []).map((line) => ({ noticeId: id, line })));
+    const storeTasks = getTransferPickingTasks();
+    const nextSeq = Math.max(0, ...storeTasks.map((item) => Number(item.id.slice(-3)))) + 1;
+    const taskId = `TP20260806${String(nextSeq).padStart(3, "0")}`;
+    const taskNo = `TP-UNI-${eligible.map((id) => id.slice(-3)).join("+")}`;
+
+    /* 勾选的调拨单（含各自温层出库订单）合并为一张统单拣货任务，下发至调拨拣货PDA */
+    const unifiedTask: TransferPickingTask = {
+      id: taskId,
+      taskNo,
+      waveNo: "UNIFIED",
+      vehicleNo: "统单",
+      pickMode: "车统后按店播种",
+      priority: "高",
+      forkliftDriver: "—",
+      sorter: "—",
+      totalQty: lineSources.reduce((sum, source) => sum + source.line.orderQty, 0),
+      status: "待领取",
+      forkliftLines: lineSources.map((source, index) => ({
+        location: `${temperatureZoneLocationPrefix[source.line.temperatureZone]}-01-0${index + 1}-01`,
+        batchNo: "B20260326",
+        sku: source.line.sku,
+        skuName: `${source.line.name} ${source.line.spec}`,
+        planned: source.line.orderQty,
+        picked: 0,
+        status: "待下架" as const,
+      })),
+      sorterLines: lineSources.map((source) => ({
+        dest: customerById.get(source.noticeId) ?? source.noticeId,
+        batchNo: "B20260326",
+        sku: source.line.sku,
+        skuName: `${source.line.name} ${source.line.spec}`,
+        planned: source.line.orderQty,
+        sorted: 0,
+        status: "待播种" as const,
+      })),
+    };
+    addTransferPickingTask(unifiedTask);
+
+    /* 原温层拆分任务取消（待下发通知单无拆分任务则跳过），作业转入调拨拣货 */
+    const relatedIds = new Set(
+      pickingTasks
+        .filter((item) => eligibleSet.has(item.noticeId ?? item.outboundOrderId) && item.status !== "已完成")
+        .map((item) => item.id),
+    );
     setPickingTasks((current) =>
       current.map((item) =>
-        item.outboundOrderId === outboundOrderId
+        relatedIds.has(item.id)
+          ? { ...item, status: "已取消" as const, note: "已合并统单拣货，转入调拨拣货作业" }
+          : item,
+      ),
+    );
+    setOutboundSplitOrders((current) => {
+      const next = { ...current };
+      for (const id of eligible) {
+        const existing = next[id];
+        if (existing) {
+          next[id] = { ...existing, merged: true };
+        } else {
+          /* 待下发直接合并：记录温层出库订单拆分并标记统单 */
+          next[id] = {
+            orders: groupByTemperatureZone(outboundLineItemsMap[id] ?? []).map((group) => ({
+              orderId: `${id}-${temperatureZoneCode[group.zone]}`,
+              zone: group.zone,
+            })),
+            merged: true,
+          };
+        }
+      }
+      return next;
+    });
+    setOutboundNotifications((current) =>
+      current.map((item) =>
+        eligibleSet.has(item.id)
           ? {
               ...item,
-              status: item.status === "已完成" ? item.status : "待拣货" as const,
+              status: item.status === "待下发" ? ("已下发" as const) : item.status,
+              pickingStatus: "拣货中" as const,
+              note: "已合并统单拣货，调拨任务由调拨拣货PDA执行。",
             }
           : item,
       ),
@@ -1467,10 +1626,10 @@ export default function App() {
 
     showFloatingAlert({
       tone: "success",
-      title: "拣货任务已下发",
-      description: `出库通知单${outboundOrderId}已生成拣货执行任务，可在PC端或PDA H5继续处理。`,
+      title: "已合并统单拣货",
+      description: `${eligible.join("、")}的温层出库订单已合并为统单任务${taskNo}，请在调拨拣货PDA执行。`,
     });
-    openPicking(outboundOrderId);
+    openWorkspaceTab("transfer-picking-pda");
   }
 
   function receiveInbound(id: string) {
@@ -1572,7 +1731,12 @@ export default function App() {
 
   function openPicking(outboundOrderId?: string) {
     setPickingScenario("normal");
-    const targetTask = outboundOrderId ? pickingTasks.find((item) => item.outboundOrderId === outboundOrderId) : undefined;
+    const targetTask = outboundOrderId
+      ? pickingTasks.find((item) =>
+          item.outboundOrderId === outboundOrderId
+          || item.noticeId === outboundOrderId
+          || item.outboundOrderId.startsWith(`${outboundOrderId}-`))
+      : undefined;
     if (targetTask) {
       setActivePdaPickingTaskId(targetTask.id);
     }
@@ -1597,26 +1761,35 @@ export default function App() {
     const task = pickingTasks.find((t) => t.id === id);
     if (!task) return;
 
-    const allPicked = totalPicked >= task.totalQty;
+    const taskPicked = Math.min(totalPicked, task.totalQty);
 
     setPickingTasks((current) =>
       current.map((item) =>
         item.id === id
           ? {
               ...item,
-              status: allPicked ? "已完成" as const : "部分拣货" as const,
-              pickedQty: Math.min(totalPicked, item.totalQty),
+              status: totalPicked >= item.totalQty ? "已完成" as const : "部分拣货" as const,
+              pickedQty: taskPicked,
             }
           : item,
       ),
     );
 
+    /* 同一通知单下所有温层出库订单的已拣数量汇总回写 */
+    const baseId = task.noticeId ?? task.outboundOrderId;
+    const notice = outboundNotifications.find((item) => item.id === baseId);
+    if (!notice) return;
+    const noticePicked = pickingTasks
+      .filter((item) => (item.noticeId ?? item.outboundOrderId) === baseId && item.status !== "已取消")
+      .reduce((sum, item) => sum + (item.id === id ? taskPicked : item.pickedQty), 0);
+    const allPicked = noticePicked >= notice.totalQty;
+
     setOutboundNotifications((current) =>
       current.map((item) =>
-        item.id === task.outboundOrderId
+        item.id === baseId
           ? {
               ...item,
-              pickedQty: Math.min(totalPicked, item.totalQty),
+              pickedQty: Math.min(noticePicked, item.totalQty),
               pickingStatus: allPicked ? "已完成" as const : "拣货中" as const,
               status: allPicked ? "部分出库" as const : "已下发" as const,
             }
@@ -2577,8 +2750,11 @@ export default function App() {
           records={outboundNotifications}
           scenario={outboundListScenario}
           onScenarioChange={setOutboundListScenario}
+          splitOrders={outboundSplitOrders}
           onDispatchPicking={dispatchPickingFromOutbound}
+          onMergeUnifiedPicking={mergeUnifiedPicking}
           onOpenPicking={openPicking}
+          onOpenTransferPicking={() => openWorkspaceTab("transfer-picking-pda")}
         />
       )}
       {activeTab === "receiving" && (
