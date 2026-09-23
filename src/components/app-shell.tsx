@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
+  CalendarDays,
   LayoutDashboard,
   LayoutGrid,
   FileText,
@@ -54,7 +55,8 @@ type NavIconName =
   | "templates"
   | "rules"
   | "wt-tasks"
-  | "auto-seeding-wall";
+  | "auto-seeding-wall"
+  | "scheduling";
 
 type NavItem = {
   id: string;
@@ -78,6 +80,18 @@ type NavSection = {
 };
 
 const navigationTree: NavSection[] = [
+  {
+    id: "scheduling",
+    label: "排班管理",
+    icon: "scheduling",
+    groups: [
+      {
+        id: "scheduling-management",
+        label: "人员与排班",
+        items: [{ id: "scheduling", label: "排班日历", icon: "scheduling" }],
+      },
+    ],
+  },
   {
     id: "som",
     label: "SOM 任务管理",
@@ -127,7 +141,9 @@ const navigationTree: NavSection[] = [
           { id: "driver-checkin", label: "签到投单", icon: "checkin" },
           { id: "warehouse-layout-3d", label: "仓库布局3D", icon: "warehouse" },
           { id: "auto-seeding-wall", label: "自动播种墙", icon: "auto-seeding-wall" },
-          { id: "wt-task-center", label: "WT 任务中心", icon: "wt-tasks" },
+          { id: "wt-task-center", label: "任务中心", icon: "wt-tasks" },
+          { id: "wt-clock-statistics", label: "计时任务统计", icon: "wt-tasks" },
+          { id: "wt-task-pda", label: "WT 计时任务PDA", icon: "checkin" },
         ],
       },
     ],
@@ -196,6 +212,7 @@ const iconMap: Record<NavIconName, LucideIcon> = {
   rules: Settings2,
   "wt-tasks": ClipboardList,
   "auto-seeding-wall": LayoutGrid,
+  scheduling: CalendarDays,
 };
 
 const defaultSectionExpanded = Object.fromEntries(navigationTree.map((section) => [section.id, true]));

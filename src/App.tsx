@@ -163,11 +163,14 @@ import { SomDashboard } from "./pages/som/som-dashboard";
 import { TemplateManagement } from "./pages/som/template-management";
 import { AutoDispatchRules } from "./pages/som/auto-dispatch-rules";
 import { WtTaskCenter } from "./pages/wt/wt-task-center";
+import { WtClockStatisticsPage } from "./pages/wt/wt-clock-statistics";
+import { WtTaskPdaPage } from "./pages/wt/wt-task-pda";
 import { OutsourcedTransferSuggestionsPage } from "./pages/outsourced-transfer-suggestions";
 import { OutsourcedTransferConfigPage } from "./pages/outsourced-transfer-config";
 import { OutsourcedTransferSuggestionDetailPage } from "./pages/outsourced-transfer-suggestion-detail";
 import { OutsourcedTransferDemo } from "./pages/outsourced-transfer-demo";
 import { transferSuggestionRecords } from "./data/outsourced-transfer-suggestions";
+import { SchedulingPage } from "./pages/scheduling";
 
 type WorkspaceTabKey =
   | "home"
@@ -213,9 +216,12 @@ type WorkspaceTabKey =
   | "som-templates"
   | "som-auto-rules"
   | "wt-task-center"
+  | "wt-clock-statistics"
+  | "wt-task-pda"
   | "outsourced-transfer"
   | "outsourced-transfer-config"
-  | "outsourced-transfer-detail";
+  | "outsourced-transfer-detail"
+  | "scheduling";
 type EditorMode = "create" | "edit";
 type ListScenario = "normal" | "loading" | "empty" | "no-result" | "no-auth" | "partial-success";
 type EditScenario = "normal" | "save-failed" | "submit-failed" | "conflict" | "read-only";
@@ -1227,9 +1233,12 @@ export default function App() {
       "som-templates": { key: "som-templates", label: "任务主题管理", closable: true, icon: FileText },
       "som-auto-rules": { key: "som-auto-rules", label: "自动派发规则", closable: true, icon: Settings2 },
       "wt-task-center": { key: "wt-task-center", label: "WT 任务中心", closable: true, icon: ClipboardList },
+      "wt-clock-statistics": { key: "wt-clock-statistics", label: "计时任务统计", closable: true, icon: ClipboardList },
+      "wt-task-pda": { key: "wt-task-pda", label: "WT 任务PDA", closable: true, icon: Clock3 },
       "outsourced-transfer": { key: "outsourced-transfer", label: "外租库转拨建议", closable: true, icon: Warehouse },
       "outsourced-transfer-config": { key: "outsourced-transfer-config", label: "外租库转拨配置", closable: true, icon: Settings2 },
       "outsourced-transfer-detail": { key: "outsourced-transfer-detail", label: "转拨建议详情", closable: true, icon: ClipboardList },
+      scheduling: { key: "scheduling", label: "排班日历", closable: true, icon: Clock3 },
     } as const;
 
     return openTabs.map((key) => definitions[key]);
@@ -2276,6 +2285,8 @@ export default function App() {
             ? "outsourced-transfer-config"
           : activeTab === "outsourced-transfer-detail"
             ? "outsourced-transfer"
+          : activeTab === "scheduling"
+            ? "scheduling"
           : "purchase-order";
 
   const currentTenant = tenantOptions.find((item) => item.id === currentTenantId) ?? tenantOptions[0];
@@ -2370,6 +2381,15 @@ export default function App() {
         }
         if (key === "wt-task-center") {
           openWorkspaceTab("wt-task-center");
+        }
+        if (key === "wt-clock-statistics") {
+          openWorkspaceTab("wt-clock-statistics");
+        }
+        if (key === "wt-task-pda") {
+          openWorkspaceTab("wt-task-pda");
+        }
+        if (key === "scheduling") {
+          openWorkspaceTab("scheduling");
         }
       }}
       onSecondaryNavSelect={(key) => {
@@ -2820,6 +2840,9 @@ export default function App() {
       {activeTab === "som-templates" && <TemplateManagement />}
       {activeTab === "som-auto-rules" && <AutoDispatchRules />}
       {activeTab === "wt-task-center" && <WtTaskCenter />}
+      {activeTab === "wt-clock-statistics" && <WtClockStatisticsPage />}
+      {activeTab === "wt-task-pda" && <WtTaskPdaPage />}
+      {activeTab === "scheduling" && <SchedulingPage />}
       {activeTab === "outsourced-transfer" && (
         <OutsourcedTransferSuggestionsPage
           onViewDetail={openOutsourcedTransferDetail}
